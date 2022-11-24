@@ -4,6 +4,7 @@ from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 import base64
 from io import BytesIO
 import os
+from omegaconf import OmegaConf
 
 # Init is ran on server startup
 # Load your model to GPU as a global variable here using the variable name "model"
@@ -11,10 +12,12 @@ def init():
     global model
     HF_AUTH_TOKEN = os.getenv("HF_AUTH_TOKEN")
     
+    config = OmegaConf.load(f"v2-inference.yml")
+
     # this will substitute the default PNDM scheduler for K-LMS  
     lms = LMSDiscreteScheduler(beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear")
 
-    model = StableDiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-2", scheduler=lms, use_auth_token=HF_AUTH_TOKEN).to("cuda")
+    model = StableDiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-2", config=config, scheduler=lms, use_auth_token=HF_AUTH_TOKEN).to("cuda")
 
 # Inference is ran for every server call
 # Reference your preloaded global model variable here.
